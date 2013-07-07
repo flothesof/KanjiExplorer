@@ -1,0 +1,17 @@
+﻿<div id="result">
+	<div id="result_content">
+		<table border="0" id="word_result" cellspacing="0">	<tr class="odd" >	
+				<td class="kanji_column">
+					<span class="kanji" style="z-index: 149999;">山
+						<span class="match">車
+						</span>	
+					</span>
+				</td>
+				<td class="kana_column">だし			
+				</td>
+				<td class="meanings_column">festival car (float)			
+				</td>
+			</tr>
+		</table>
+	</div>
+</div>
