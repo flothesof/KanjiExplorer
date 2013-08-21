@@ -9,6 +9,9 @@ import urlparse, urllib
 from PyQt4 import QtCore, QtGui, uic
 import xml.etree.cElementTree as ET
 
+#==============================================================================
+# helper functions
+#==============================================================================
 def fixurl(url):
     # turn string into unicode
     if not isinstance(url,unicode):
@@ -41,6 +44,16 @@ def fixurl(url):
     # put it back together
     netloc = ''.join((user,colon1,pass_,at,host,colon2,port))
     return urlparse.urlunsplit((scheme,netloc,path,query,fragment))
+
+def model_data_to_string(data):
+    if isinstance(data, QtCore.QVariant):
+        return data.toString()
+    else:
+        return data
+
+#==============================================================================
+# Classes
+#==============================================================================
 
 class DictionaryWord(object):
     def __init__(self, word, is_common=False):
@@ -158,7 +171,7 @@ class MainWindow(QtGui.QMainWindow):
                                 
         QtCore.QObject.connect(self.ui.listView_2,
                                QtCore.SIGNAL('clicked(QModelIndex)'),
-                                self.displayExpressionDefinition)
+                                self.updateGuiFollowingSelection)
         
         QtCore.QObject.connect(self.ui.listView_2,
                                QtCore.SIGNAL('doubleClicked(QModelIndex)'),
@@ -206,9 +219,7 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.textBrowser_2.setText(display_html)
             
     
-    def displayExpressionDefinition(self, index):
-        expression = self.current_words_model.data(index, 0).split('[')[0]
-        
+    def updateDictionaryDefinition(self, expression):
         definition = self.dict_db.getDefinition(expression)
         if definition != None:
             (reading, senses) = definition
@@ -222,10 +233,17 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.textBrowser.setText(display_html)
      
     def copyExpressionToSearchBox(self, index):
-        expression = self.current_words_model.data(index, 0).split('[')[0]
+        expression = model_data_to_string(
+                    self.current_words_model.data(index, 0)).split('[')[0]
         self.ui.lineEdit.setText(expression)
         self.searchForKanjiExpression()
-     
+    
+    def updateGuiFollowingSelection(self, index):
+        expression = model_data_to_string(
+                    self.current_words_model.data(index, 0)).split('[')[0]
+        self.updateDictionaryDefinition(expression)
+        self.updateKanjiTextBrowser(expression)
+    
     def closeEvent(self, e):
         pass
     
