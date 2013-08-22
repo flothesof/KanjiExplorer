@@ -3,11 +3,15 @@ KanjiExplorer
 
 A dictionary, kanji-checker and Tatoeba example browser built on top of the JMDict and Kanjidic databases.
 
-![Screencap](2013_08_21.PNG)
+![Screencap](2013_08_22.PNG)
 
-# Features
+# Usage
 
-- click on any expression in the *Search results* panel to see its definition (if it exists)
+- click on any expression in the *Search results* panel to see its definition (if it exists) and kanji details
 - toggle between only common expressions containing the search terms and all matches with a checkbox
 - double-click on any expression in the *Search results* panel to copy it to the search bar and refresh the GUI
-- see component kanji details for the expression in the search bar when you click on *Search*
+- click on any expression in the history panel to bring back the associated search results
+
+# Improvements in the works 
+
+- integration with Anki (as a plugin?)
