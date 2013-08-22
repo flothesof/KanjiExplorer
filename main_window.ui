@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>894</width>
+    <width>1001</width>
     <height>708</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>KanjiExplorer</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -25,14 +25,7 @@
          </font>
         </property>
         <property name="text">
-         <string>たけ</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="checkBox">
-        <property name="text">
-         <string>Common words only</string>
+         <string>車</string>
         </property>
        </widget>
       </item>
@@ -46,7 +39,7 @@
      </layout>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <layout class="QHBoxLayout" name="horizontalLayout_4">
       <item>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
@@ -81,6 +74,12 @@
             <pointsize>12</pointsize>
            </font>
           </property>
+          <property name="alternatingRowColors">
+           <bool>true</bool>
+          </property>
+          <property name="textElideMode">
+           <enum>Qt::ElideRight</enum>
+          </property>
          </widget>
         </item>
        </layout>
@@ -88,9 +87,32 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QLabel" name="label_2">
+         <layout class="QVBoxLayout" name="verticalLayout_7">
+          <item>
+           <widget class="QLabel" name="label_2">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Search results</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBox">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="text">
-           <string>Search results</string>
+           <string>Common words only</string>
           </property>
          </widget>
         </item>
@@ -104,8 +126,11 @@
           </property>
           <property name="font">
            <font>
-            <pointsize>14</pointsize>
+            <pointsize>12</pointsize>
            </font>
+          </property>
+          <property name="alternatingRowColors">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -216,7 +241,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>894</width>
+     <width>1001</width>
      <height>21</height>
     </rect>
    </property>
@@ -231,5 +256,22 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>lineEdit</sender>
+   <signal>returnPressed()</signal>
+   <receiver>pushButton</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>435</x>
+     <y>46</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>837</x>
+     <y>50</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

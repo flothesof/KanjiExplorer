@@ -12,38 +12,6 @@ import xml.etree.cElementTree as ET
 #==============================================================================
 # helper functions
 #==============================================================================
-def fixurl(url):
-    # turn string into unicode
-    if not isinstance(url,unicode):
-        url = url.decode('utf8')
-
-    # parse it
-    parsed = urlparse.urlsplit(url)
-
-    # divide the netloc further
-    userpass,at,hostport = parsed.netloc.rpartition('@')
-    user,colon1,pass_ = userpass.partition(':')
-    host,colon2,port = hostport.partition(':')
-
-    # encode each component
-    scheme = parsed.scheme.encode('utf8')
-    user = urllib.quote(user.encode('utf8'))
-    colon1 = colon1.encode('utf8')
-    pass_ = urllib.quote(pass_.encode('utf8'))
-    at = at.encode('utf8')
-    host = host.encode('idna')
-    colon2 = colon2.encode('utf8')
-    port = port.encode('utf8')
-    path = '/'.join(  # could be encoded slashes!
-        urllib.quote(urllib.unquote(pce).encode('utf8'),'')
-        for pce in parsed.path.split('/')
-    )
-    query = urllib.quote(urllib.unquote(parsed.query).encode('utf8'),'=&?/')
-    fragment = urllib.quote(urllib.unquote(parsed.fragment).encode('utf8'))
-
-    # put it back together
-    netloc = ''.join((user,colon1,pass_,at,host,colon2,port))
-    return urlparse.urlunsplit((scheme,netloc,path,query,fragment))
 
 def model_data_to_string(data):
     if isinstance(data, QtCore.QVariant):
@@ -55,34 +23,33 @@ def model_data_to_string(data):
 # Classes
 #==============================================================================
 
-class DictionaryWord(object):
-    def __init__(self, word, is_common=False):
-        self.word = word
-        self.is_common = is_common
-        
-    def display_word_with_commonness(self):
-        if self.is_common:
-            return self.word + "[Common]"
-        else:
-            return self.word + "[Uncommon]"
-
 class KanjiDB(object):
+    """ kanji database class that loads up by parsing the kanjidic2 dictionary 
+    file and can then be used for lookup of specific kanji.
+    """
     def __init__(self):
         self.tree = ET.ElementTree(file='kanjidic2.xml')
         literals = self.tree.getroot().findall('character/literal')
         self.literals = [literal.text for literal in literals]
         
     def getKanjiDetails(self, kanji):
-        """returns the kana and the meanings from a given kanji"""
+        """returns the kanji, kana and the meanings from dictionary 
+        for a given kanji"""
         element = self.tree.getroot()[self.literals.index(kanji) + 1]
         kanji = element.find('literal').text
-        kana = [elem.text for elem in filter(lambda reading: reading.attrib['r_type'] in ['ja_on', 'ja_kun'], element.findall('reading_meaning/rmgroup/reading'))]
-        meanings = [elem.text for elem in filter(lambda elem: elem.attrib == {}, element.findall('reading_meaning/rmgroup/meaning'))]
+        kana = [elem.text for elem in filter(
+                lambda reading: reading.attrib['r_type'] in ['ja_on', 'ja_kun'], 
+                            element.findall('reading_meaning/rmgroup/reading'))]
+        meanings = [elem.text for elem in filter(
+                lambda elem: elem.attrib == {}, element.findall(
+                                    'reading_meaning/rmgroup/meaning'))]
         return (kanji, kana, meanings)
         
     def getFormattedKanjiDetails(self, kanji):
         (kanji, kana, meanings) = self.getKanjiDetails(kanji)
-        return """<b>%s</b> / %s / %s""" % (kanji, ", ".join(kana), ", ".join(meanings))
+        return """<b>%s</b> / %s / %s""" % (kanji,
+                                            ", ".join(kana),
+                                             ", ".join(meanings))
     
     def isInDB(self, kanji):
         return kanji in self.literals
@@ -128,10 +95,26 @@ class DictionaryDB(object):
                 if search.text == kanji_expression:
                     reading = elem.find('r_ele/reb').text
                     senses = elem.findall('sense/gloss')
-                    senses = filter(lambda item: item.attrib.items()[0][1] == 'eng', senses)
+                    senses = filter(
+                        lambda item: item.attrib.items()[0][1] == 'eng', senses)
                     senses = [sense.text for sense in senses]
                     return (reading, senses)
                 
+class DictionaryWord(object):
+    def __init__(self, word, is_common=False):
+        self.word = word
+        self.is_common = is_common
+        
+    def display_word_with_commonness(self):
+        if self.is_common:
+            return self.word + "[Common]"
+        else:
+            return self.word + "[Uncommon]"
+
+#==============================================================================
+# Main window
+#==============================================================================
+
 class MainWindow(QtGui.QMainWindow):
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
@@ -169,6 +152,10 @@ class MainWindow(QtGui.QMainWindow):
                                QtCore.SIGNAL('stateChanged(int)'),
                                 self.updateCurrentWordsListView)
                                 
+        QtCore.QObject.connect(self.ui.listView,
+                               QtCore.SIGNAL('clicked(QModelIndex)'),
+                                self.updateFollowingHistorySelection)
+        
         QtCore.QObject.connect(self.ui.listView_2,
                                QtCore.SIGNAL('clicked(QModelIndex)'),
                                 self.updateGuiFollowingSelection)
@@ -177,12 +164,13 @@ class MainWindow(QtGui.QMainWindow):
                                QtCore.SIGNAL('doubleClicked(QModelIndex)'),
                                 self.copyExpressionToSearchBox)
                                     
-    def searchForKanjiExpression(self):
+    def searchForKanjiExpression(self, append_to_history=True):
         kanji_expression = self.ui.lineEdit.text()
-        self.addExpressionToHistory(kanji_expression)
-        self.updateHistoryListView()
+        if append_to_history:        
+            self.addExpressionToHistory(kanji_expression)
+            self.updateHistoryListView()
         self.updateTatoebaPage(kanji_expression)
-        self.updateKanjiTextBrowser(kanji_expression)
+        self.updateGuiWithExpression(kanji_expression)
         filtered_words = self.dict_db.findWordsContainingExpression(kanji_expression)
         commonness = self.dict_db.areCommonWords(filtered_words)
         self.current_words = []
@@ -206,9 +194,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def updateTatoebaPage(self, expression):
         adr = u"http://tatoeba.org/fre/sentences/search?query=%s&from=jpn&to=eng" % expression
-        adr = fixurl(adr)        
-        url = QtCore.QUrl()
-        url.setEncodedUrl(adr)
+        url = QtCore.QUrl(adr)
         self.webView.load(url)
     
     def updateKanjiTextBrowser(self, expression):
@@ -241,9 +227,18 @@ class MainWindow(QtGui.QMainWindow):
     def updateGuiFollowingSelection(self, index):
         expression = model_data_to_string(
                     self.current_words_model.data(index, 0)).split('[')[0]
+        self.updateGuiWithExpression(expression)
+    
+    def updateGuiWithExpression(self, expression):
         self.updateDictionaryDefinition(expression)
         self.updateKanjiTextBrowser(expression)
     
+    def updateFollowingHistorySelection(self, index):
+        expression = model_data_to_string(
+                    self.history_model.data(index, 0))
+        self.ui.lineEdit.setText(expression)
+        self.searchForKanjiExpression(append_to_history=False)
+        
     def closeEvent(self, e):
         pass
     
