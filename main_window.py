@@ -5,9 +5,14 @@ Created on Tue Aug 20 15:00:59 2013
 @author: FL232714
 """
 import sys
-import urlparse, urllib
 from PyQt4 import QtCore, QtGui, uic
 import xml.etree.cElementTree as ET
+
+try:
+    from PyQt4.QtCore import QString
+except ImportError:
+    # we are using Python3 so QString is not defined
+    QtCore.QString = type("")
 
 #==============================================================================
 # helper functions
@@ -165,7 +170,7 @@ class MainWindow(QtGui.QMainWindow):
                                 self.copyExpressionToSearchBox)
                                     
     def searchForKanjiExpression(self, append_to_history=True):
-        kanji_expression = self.ui.lineEdit.text()
+        kanji_expression = unicode(self.ui.lineEdit.text())
         if append_to_history:        
             self.addExpressionToHistory(kanji_expression)
             self.updateHistoryListView()
@@ -227,6 +232,7 @@ class MainWindow(QtGui.QMainWindow):
     def updateGuiFollowingSelection(self, index):
         expression = model_data_to_string(
                     self.current_words_model.data(index, 0)).split('[')[0]
+        expression = unicode(expression)
         self.updateGuiWithExpression(expression)
     
     def updateGuiWithExpression(self, expression):
