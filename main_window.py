@@ -232,6 +232,7 @@ class MainWindow(QtGui.QMainWindow):
     def updateGuiWithExpression(self, expression):
         self.updateDictionaryDefinition(expression)
         self.updateKanjiTextBrowser(expression)
+        self.updateTatoebaPage(expression)
     
     def updateFollowingHistorySelection(self, index):
         expression = model_data_to_string(
