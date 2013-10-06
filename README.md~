@@ -12,6 +12,6 @@ A dictionary, kanji-checker and Tatoeba example browser built on top of the JMDi
 - double-click on any expression in the *Search results* panel to copy it to the search bar and refresh the GUI
 - click on any expression in the history panel to bring back the associated search results
 
-# Improvements that could be made
+# Improvements in the works 
 
 - integration with Anki (as a plugin?)
