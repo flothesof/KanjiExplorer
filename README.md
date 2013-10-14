@@ -3,7 +3,7 @@ KanjiExplorer
 
 A dictionary, kanji-checker and Tatoeba example browser built on top of the JMDict and Kanjidic databases.
 
-![Screencap](Screenshot/2013_08_22.PNG)
+![Screencap](Screenshot/2013_10_14.PNG)
 
 # Usage
 
