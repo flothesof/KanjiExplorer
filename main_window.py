@@ -32,8 +32,8 @@ class KanjiDB(object):
     """ kanji database class that loads up by parsing the kanjidic2 dictionary 
     file and can then be used for lookup of specific kanji.
     """
-    def __init__(self):
-        self.tree = ET.ElementTree(file='kanjidic2.xml')
+    def __init__(self, filename='kanjidic2.xml'):
+        self.tree = ET.ElementTree(file=filename)
         literals = self.tree.getroot().findall('character/literal')
         self.literals = [literal.text for literal in literals]
         
@@ -60,13 +60,15 @@ class KanjiDB(object):
         return kanji in self.literals
 
 class DictionaryDB(object):
-    def __init__(self):
-        self.tree = ET.ElementTree(file='JMdict.xml')
+    def __init__(self, filename='JMdict.xml'):
+        self.tree = ET.ElementTree(file=filename)
         self.word_entries = self.tree.getroot().findall('entry/k_ele/keb')
         self.words = [entry.text for entry in self.word_entries]
+        self.commonness_dict = self.generateCommonnessDict()
     
     def findWordsContainingExpression(self, kanji_expression):
-        return filter(lambda expression: kanji_expression in expression, self.words)
+        return filter(lambda expression: kanji_expression in expression, 
+                      self.words)
 
     def isCommonWord(self, word):
         found = False
@@ -81,8 +83,17 @@ class DictionaryDB(object):
                 return False
         else:
             return False
-            
-    def areCommonWords(self, word_list):
+    
+    def generateCommonnessDict(self):
+        commonness_list = []
+        for elem in self.tree.findall('entry/k_ele'):
+            if elem.find('ke_pri') != None:
+                commonness_list.append(True)
+            else:
+                commonness_list.append(False)
+        return dict(zip(self.words, commonness_list))
+        
+    def areCommonWordsTraversingMethod(self, word_list):
         """returns a boolean list telling if a given word in a word list
         is common while traversing the dictionary tree only once """
         found = [False for word in word_list]
@@ -91,6 +102,11 @@ class DictionaryDB(object):
                 if elem.find('ke_pri') != None:
                     found[word_list.index(elem.find('keb').text)] = True
         return found
+    
+    def areCommonWords(self, word_list):
+        """returns a boolean list telling if a given word in a word list
+        is common while looking up the word in a pre-generated dictionary"""
+        return [self.commonness_dict[word] for word in word_list]
     
     def getDefinition(self, kanji_expression):
         kanji_expression = unicode(kanji_expression) 
